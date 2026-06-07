@@ -1,8 +1,4 @@
-Oto kompletny, zaktualizowany plik script.js. Poprawiłem w nim mechanizm wyciągania liczb ujemnych, dzięki czemu frazy typu "jest -10", "-5 stopni" czy po prostu "-15" zostaną bezbłędnie zinterpretowane, a bot zaleci ciepłą puchową kurtkę.
 
-Wystarczy, że zaznaczysz cały poniższy kod, skopiujesz go i wkleisz w miejsce starego kodu w swoim pliku.
-
-JavaScript
 const API_KEY = "2d670305b6e35d3b2eceb678f4f11ccf";
 
 // Inicjalizacja aplikacji po załadowaniu DOM
