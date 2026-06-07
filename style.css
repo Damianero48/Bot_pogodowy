@@ -231,27 +231,29 @@ body {
     100% { opacity: .2; }
 }
 
-/* Responsywność */
+/* == TUTAJ ZACZYNA SIĘ NOWY KOD NA SAMYM KOŃCU == */
+
 @media (max-width: 768px) {
-    body { padding: 10px; }
-    .chat-container { height: calc(100vh - 40px); }
-}
-/* Poprawka dla ekranów dotykowych i telefonów */
-@media (max-width: 768px) {
+    body {
+        padding: 0;
+    }
+
     .chat-container {
         height: 100vh;
-        height: -webkit-fill-available; /* Poprawka wysokości dla Safari (iOS) */
+        height: -webkit-fill-available;
         max-width: 100%;
-        border-radius: 0; /* Na telefonie czat zajmie cały ekran */
+        border-radius: 0;
+        border: none;
     }
 
     .chat-input-area {
         position: relative;
-        z-index: 9999 !important; /* Wymuszenie, aby pasek wpisywania był na samym wierzchu */
+        z-index: 9999 !important;
+        background: var(--bot-msg-bg); /* Lekkie wzmocnienie tła na telefonie */
     }
 
     .chat-input-area input {
-        font-size: 16px !important; /* Zapobiega automatycznemu, irytującemu przybliżaniu ekranu w iPhone */
+        font-size: 16px !important; 
         position: relative;
         z-index: 10000 !important;
     }
