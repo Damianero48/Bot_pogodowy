@@ -1,3 +1,8 @@
+Oto kompletny, zaktualizowany plik script.js. Poprawiłem w nim mechanizm wyciągania liczb ujemnych, dzięki czemu frazy typu "jest -10", "-5 stopni" czy po prostu "-15" zostaną bezbłędnie zinterpretowane, a bot zaleci ciepłą puchową kurtkę.
+
+Wystarczy, że zaznaczysz cały poniższy kod, skopiujesz go i wkleisz w miejsce starego kodu w swoim pliku.
+
+JavaScript
 const API_KEY = "2d670305b6e35d3b2eceb678f4f11ccf";
 
 // Inicjalizacja aplikacji po załadowaniu DOM
@@ -6,7 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Odczyt zapisanego motywu (Dark/Light)
     if (localStorage.getItem("theme") === "dark") {
         document.body.setAttribute("data-theme", "dark");
-        document.getElementById("theme-btn").innerHTML = '<i class="fas fa-sun"></i>';
+        const themeBtn = document.getElementById("theme-btn");
+        if (themeBtn) themeBtn.innerHTML = '<i class="fas fa-sun"></i>';
     }
 });
 
@@ -54,7 +60,7 @@ function addMessage(text, sender) {
     const chatBox = document.getElementById("chat-box");
     const msgDiv = document.createElement("div");
     msgDiv.classList.add("message", sender);
-    msgDiv.innerHTML = text; // Wykorzystujemy innerHTML, aby obsługiwać np. pogrubienia z API
+    msgDiv.innerHTML = text; // Obsługa tagów HTML (np. pogrubienia)
     chatBox.appendChild(msgDiv);
     scrollChat();
 }
@@ -97,24 +103,30 @@ async function fetchWeatherFromAPI(city) {
     }
 }
 
-// ANALIZA TEKSTOWA (Gdy użytkownik nie wpisuje miasta, tylko stan pogodowy)
+// ANALIZA TEKSTOWA (Gdy użytkownik opisuje stan pogodowy ręcznie)
 function processTextWeather(userInput) {
     const text = userInput.toLowerCase();
     
     let temp = 15; // domyślna neutralna temperatura do analizy
     let rain = false;
 
-    if (text.includes("zimno") || text.includes("mróz") || text.includes("śnieg")) temp = 2;
+    if (text.includes("zimno") || text.includes("mróz") || text.includes("śnieg") || text.includes("-")) temp = 2;
     if (text.includes("gorąco") || text.includes("upal") || text.includes("ciepło")) temp = 25;
     if (text.includes("deszcz") || text.includes("pogoda pod psem") || text.includes("pada")) rain = true;
 
-    // Próba wyciągnięcia stopni Celsjusza za pomocą wyrażenia regularnego np. "7 stopni"
+    // POPRAWIONY REGEX: Szuka liczby, która może mieć minus na początku (np. "-10 stopni", "-5°C")
     const tempMatch = text.match(/(-?\d+)\s*(stopn|°|c)/);
+    
+    // KOŁO RATUNKOWE: Wyciąga samą liczbę ujemną, jeśli użytkownik wpisał tylko np. "jest -10"
+    const simpleMinusMatch = text.match(/(-\d+)/);
+
     if (tempMatch) {
         temp = parseInt(tempMatch[1]);
+    } else if (simpleMinusMatch) {
+        temp = parseInt(simpleMinusMatch[1]);
     }
 
-    return `Na podstawie Twojego opisu analizuję warunki...<br><br><b>Rekomendacja:</b> ` + generateAdvice(temp, rain);
+    return `Na podstawie Twojego opisu analizuję warunki (obliczona temperatura: ${temp}°C)...<br><br><b>Rekomendacja:</b> ` + generateAdvice(temp, rain);
 }
 
 // LOGIKA WARUNKOWA REKOMENDACJI MODOWEJ
@@ -127,28 +139,28 @@ function generateAdvice(temp, isRaining) {
     if (temp < 5) {
         outfit = "Gruba kurtka zimowa, puchowa, ciepły sweter lub polar i długie spodnie.";
         accessories = "Czapka, szalik oraz ciepłe rękawiczki.";
-        protection = "Buty z grubą podeszwą, opcjonalnie krem ochronny na mróz.";
+        protection = "Buty z grubą podeszwą (trapery/śniegowce), opcjonalnie krem ochronny na mróz.";
         style = "Styl zimowy / Outdoor.";
     } else if (temp >= 5 && temp < 15) {
-        outfit = "Przejściowa kurtka (np. bomberka, ramoneska), lekki sweter lub bluza.";
-        accessories = "Cienki szal lub komin.";
-        protection = "Pełne buty, np. sneakersy lub botki.";
+        outfit = "Przejściowa kurtka (np. bomberka, ramoneska, lekki płaszcz), bluza lub sweter.";
+        accessories = "Cienki szal, apaszka lub komin.";
+        protection = "Pełne buty, np. sneakersy, adidasy lub botki.";
         style = "Styl Casual / Streetwear.";
     } else if (temp >= 15 && temp < 23) {
-        outfit = "T-shirt lub koszula, a na wierzch jeansowa kurtka, kardigan lub lekka bluza.";
+        outfit = "T-shirt lub koszula, a na wierzch jeansowa kurtka, kardigan lub lekka marynarka.";
         accessories = "Okulary przeciwsłoneczne.";
-        protection = "Wygodne buty codzienne.";
+        protection = "Wygodne buty codzienne, trampki.";
         style = "Smart Casual.";
     } else {
-        outfit = "Krótkie spodenki, spódnica lub lekka sukienka oraz przewiewny T-shirt / top.";
-        accessories = "Okulary przeciwsłoneczne i czapka z daszkiem / kapelusz.";
-        protection = "Krem z filtrem UV (SPF 30+).";
+        outfit = "Krótkie spodenki, spódnica lub lekka sukienka oraz przewiewny T-shirt / top na ramiączkach.";
+        accessories = "Okulary przeciwsłoneczne i czapka z daszkiem / słomkowy kapelusz.";
+        protection = "Krem z filtrem UV (SPF 30+), zabierz butelkę wody.";
         style = "Styl Letni / Wakacyjny.";
     }
 
     if (isRaining) {
-        outfit = "Kurtka przeciwdeszczowa (hardshell lub parki) z kapturem zamiast zwykłej kurtki.";
-        protection += " <b>Koniecznie weź ze sobą parasol</b> oraz załóż wodoodporne buty (np. impregnowane lub kalosze).";
+        outfit = "Kurtka przeciwdeszczowa (hardshell, płaszcz przeciwdeszczowy lub parka) z kapturem.";
+        protection += " <b>Koniecznie weź ze sobą parasol</b> oraz załóż wodoodporne buty (np. kalosze lub dobrze zaimpregnowane obuwie).";
     }
 
     return `<br>• <b>Strój:</b> ${outfit}<br>• <b>Dodatki:</b> ${accessories}<br>• <b>Ochrona:</b> ${protection}<br>• <b>Styl:</b> ${style}`;
@@ -161,11 +173,11 @@ function toggleTheme() {
     
     if (body.hasAttribute("data-theme")) {
         body.removeAttribute("data-theme");
-        themeBtn.innerHTML = '<i class="fas fa-moon"></i>';
+        if (themeBtn) themeBtn.innerHTML = '<i class="fas fa-moon"></i>';
         localStorage.setItem("theme", "light");
     } else {
         body.setAttribute("data-theme", "dark");
-        themeBtn.innerHTML = '<i class="fas fa-sun"></i>';
+        if (themeBtn) themeBtn.innerHTML = '<i class="fas fa-sun"></i>';
         localStorage.setItem("theme", "dark");
     }
 }
